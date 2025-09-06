@@ -1,5 +1,5 @@
 // API configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://fortunate-rebirth-production.up.railway.app/api';
 
 export const apiConfig = {
   baseURL: API_BASE_URL,
@@ -32,7 +32,7 @@ export const apiCall = async (endpoint: string, options: RequestInit = {}) => {
   }
 };
 
-// Auth helper
+// Auth helper for protected endpoints
 export const apiCallWithAuth = async (endpoint: string, token: string, options: RequestInit = {}) => {
   return apiCall(endpoint, {
     ...options,
@@ -41,4 +41,27 @@ export const apiCallWithAuth = async (endpoint: string, token: string, options: 
       'Authorization': `Bearer ${token}`,
     },
   });
+};
+
+// Example service functions
+export const authService = {
+  login: (credentials: { username: string; password: string }) => 
+    apiCall('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    }),
+
+  register: (userData: { username: string; email: string; password: string }) => 
+    apiCall('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    }),
+};
+
+export const userService = {
+  getCurrentUser: (token: string) => 
+    apiCallWithAuth('/users/me', token),
+
+  getAllUsers: (token: string) => 
+    apiCallWithAuth('/users', token),
 };

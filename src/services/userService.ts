@@ -2,39 +2,64 @@ import { apiCall, apiCallWithAuth } from '@/lib/api';
 
 export interface User {
   id: number;
-  username: string;
+  name: string;
+  username?: string;
   email: string;
+  currency: string;
+  role: string;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 export interface LoginRequest {
-  username: string;
+  email: string;
   password: string;
 }
 
 export interface RegisterRequest {
-  username: string;
+  name: string;
   email: string;
   password: string;
 }
 
+export interface AuthResponse {
+  token: string;
+  type: string; // Should be "Bearer"
+  user: User;
+}
+
 export const userService = {
   // Public endpoints
-  login: (credentials: LoginRequest) => 
+  login: (credentials: LoginRequest): Promise<AuthResponse> => 
     apiCall('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     }),
 
-  register: (userData: RegisterRequest) => 
+  register: (userData: RegisterRequest): Promise<AuthResponse> => 
     apiCall('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     }),
 
   // Protected endpoints
-  getCurrentUser: (token: string) => 
-    apiCallWithAuth('/users/me', token),
+  getCurrentUser: (token: string): Promise<User> => 
+    apiCallWithAuth('/user/profile', token),
 
-  getAllUsers: (token: string) => 
-    apiCallWithAuth('/users', token),
+  // Logout helper
+  logout: () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+  },
+
+  // Get stored token
+  getStoredToken: (): string | null => {
+    return localStorage.getItem('authToken');
+  },
+
+  // Get stored user
+  getStoredUser: (): User | null => {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
+  }
 };
